@@ -2,7 +2,7 @@
 //! implemented.
 //!
 //! Things in a space ONLY live in that space, which means spaces are how the routing layer of tp2p
-//! knows which CRDTs/transactions go to which people.
+//! knows which transactions go to which people.
 
 use crate::models::object_id;
 use getset::Getters;
@@ -18,42 +18,6 @@ object_id! {
 object_id! {
     /// A unique ID for space members. In space, nobody hears you scream...
     MemberID
-}
-
-/// Defines the actions we can perform on a space.
-///
-/// Note that many actions here don't have a `space_id` because the outer CRDT will always have a
-/// space id for space-specific actions, and there's no point in duplicating the space id on the
-/// inner CRDT.
-#[derive(AsnType, Encode, Decode, Deserialize, Serialize)]
-#[rasn(choice)]
-pub enum SpaceCrdt {
-    /// Set a space into existence
-    #[rasn(tag(explicit(0)))]
-    Set(Space),
-    /// Set the space's color
-    #[rasn(tag(explicit(1)))]
-    SetColor(Option<String>),
-    /// Sets a full member object
-    #[rasn(tag(explicit(2)))]
-    SetMember(Member),
-    /// Set a member's role
-    #[rasn(tag(explicit(3)))]
-    SetMemberRole {
-        #[rasn(tag(explicit(0)))]
-        member_id: MemberID,
-        #[rasn(tag(explicit(1)))]
-        role: Role,
-    },
-    /// Set the space's title
-    #[rasn(tag(explicit(4)))]
-    SetTitle(String),
-    /// Delete a space.
-    #[rasn(tag(explicit(5)))]
-    Unset,
-    /// Remove a member from this space
-    #[rasn(tag(explicit(6)))]
-    UnsetMember(MemberID),
 }
 
 /// Defines a role a user can have within a space

@@ -9,7 +9,7 @@ use crate::models::{
     object_id,
     space::SpaceID,
 };
-use getset::Getters;
+use getset::{Getters, MutGetters};
 use rasn::{AsnType, Decode, Encode};
 use serde::{Deserialize, Serialize};
 use stamp_core::crypto::base::Hash;
@@ -24,27 +24,9 @@ object_id! {
     FileChunkID
 }
 
-/// Defines the actions we can perform on a file
-#[derive(AsnType, Encode, Decode, Deserialize, Serialize)]
-#[rasn(choice)]
-pub enum FileCrdt {
-    /// Add a file
-    #[rasn(tag(explicit(0)))]
-    Set(File),
-    /// Create a chunk
-    #[rasn(tag(explicit(1)))]
-    SetChunk(FileChunk),
-    /// Set a file's name
-    #[rasn(tag(explicit(2)))]
-    SetName(String),
-    /// Remove a file
-    #[rasn(tag(explicit(3)))]
-    Unset,
-}
-
 /// A single chunk of a file
-#[derive(AsnType, Encode, Decode, Serialize, Deserialize, Getters)]
-#[getset(get = "pub")]
+#[derive(AsnType, Encode, Decode, Serialize, Deserialize, Getters, MutGetters)]
+#[getset(get = "pub", get_mut = "pub(crate)")]
 pub struct FileChunk {
     /// The chunk's ID
     #[rasn(tag(explicit(0)))]
@@ -61,8 +43,8 @@ pub struct FileChunk {
 }
 
 /// A file that can be linked to or embeded into a note.
-#[derive(AsnType, Encode, Decode, Serialize, Deserialize, Getters)]
-#[getset(get = "pub")]
+#[derive(AsnType, Encode, Decode, Serialize, Deserialize, Getters, MutGetters)]
+#[getset(get = "pub", get_mut = "pub(crate)")]
 pub struct File {
     /// The file's ID
     #[rasn(tag(explicit(0)))]

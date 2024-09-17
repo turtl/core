@@ -18,27 +18,6 @@ object_id! {
     PageID
 }
 
-/// Defines the actions we can perform on a note
-#[derive(AsnType, Encode, Decode, Deserialize, Serialize)]
-#[rasn(choice)]
-pub enum PageCrdt {
-    /// Create a page
-    #[rasn(tag(explicit(0)))]
-    Set(Page),
-    /// Set a page's display
-    #[rasn(tag(explicit(1)))]
-    SetDisplay(Display),
-    /// Set a page's slice
-    #[rasn(tag(explicit(2)))]
-    SetSlice(Slice),
-    /// Set a page's title
-    #[rasn(tag(explicit(3)))]
-    SetTitle(String),
-    /// Delete a page
-    #[rasn(tag(explicit(4)))]
-    Unset,
-}
-
 /// Describes a slice of notes given a filter criteria
 #[derive(AsnType, Encode, Decode, Deserialize, Serialize)]
 #[rasn(choice)]
@@ -157,5 +136,8 @@ pub struct Page {
     /// Determines how notes in this page are displayed.
     #[rasn(tag(explicit(4)))]
     view: Display,
+    /// Whether or not the page is marked as deleted.
+    #[rasn(tag(explicit(5)))]
+    deleted: bool,
 }
 

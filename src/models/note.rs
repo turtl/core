@@ -9,7 +9,7 @@ use crate::{
         space::SpaceID,
     },
 };
-use getset::Getters;
+use getset::{Getters, MutGetters};
 use rasn::{AsnType, Encode, Decode};
 use serde::{Deserialize, Serialize};
 use stamp_core::{
@@ -29,43 +29,9 @@ object_id! {
     ///
     /// Sections are given their ID regardless of their order within the note body, so edits to a
     /// section can happen independently of the *position* of that section within the body. This
-    /// makes CRDT merges and updates more correct as opposed to dealing with weird shit like
+    /// makes operation merges and updates more correct as opposed to dealing with weird shit like
     /// array indexes, which can move around.
     SectionID
-}
-
-/// Defines the actions we can perform on a note.
-#[derive(AsnType, Encode, Decode, Deserialize, Serialize)]
-#[rasn(choice)]
-pub enum NoteCrdt {
-    /// Create a full note
-    #[rasn(tag(explicit(0)))]
-    Set(Note),
-    /// Add a new section to this note
-    #[rasn(tag(explicit(1)))]
-    SetBodySection {
-        #[rasn(tag(explicit(0)))]
-        section_id: SectionID,
-        #[rasn(tag(explicit(1)))]
-        section: Section,
-        #[rasn(tag(explicit(2)))]
-        after: Option<SectionID>,
-    },
-    /// Add a tag to this note
-    #[rasn(tag(explicit(2)))]
-    SetTag(Tag),
-    /// Set this note's title LOL
-    #[rasn(tag(explicit(3)))]
-    SetTitle(Option<String>),
-    /// Remove a note
-    #[rasn(tag(explicit(4)))]
-    Unset,
-    /// Remove a section
-    #[rasn(tag(explicit(5)))]
-    UnsetBodySection(SectionID),
-    /// Remove a tag
-    #[rasn(tag(explicit(6)))]
-    UnsetTag(Tag),
 }
 
 /// Represents a tag that can be attached to a note
@@ -85,7 +51,7 @@ pub struct TableCoord {
 /// A section is a paragraph, bullet list, etc...any piece or component of a note's body.
 #[derive(AsnType, Encode, Decode, Deserialize, Serialize)]
 #[rasn(choice)]
-pub enum Section {
+pub enum SectionSpec {
     /// A link to a note
     #[rasn(tag(explicit(0)))]
     NoteLink(NoteID),
@@ -106,10 +72,10 @@ pub enum Section {
     Paragraph(String),
     /// A bullet item
     #[rasn(tag(explicit(6)))]
-    Bullet(Vec<NoteBody>),
+    Bullet(String),
     /// A numbered list item
     #[rasn(tag(explicit(7)))]
-    Numbered(Vec<NoteBody>),
+    Numbered(String),
     /// A checkbox item
     #[rasn(tag(explicit(8)))]
     Checkbox {
@@ -156,9 +122,22 @@ pub enum Section {
     },
 }
 
+/// A body section.
+#[derive(AsnType, Encode, Decode, Getters, MutGetters, Deserialize, Serialize)]
+#[getset(get = "pub", get_mut = "pub(crate)")]
+pub struct Section {
+    /// The actual section content
+    #[rasn(tag(explicit(0)))]
+    spec: SectionSpec,
+    /// How much this section is indented. This saves us from having to deal with things like
+    /// nested sections. Hopefully.
+    #[rasn(tag(explicit(1)))]
+    indent: u8,
+}
+
 /// The body of a note, made from an ordered set of [`Section`]s
-#[derive(AsnType, Encode, Decode, Getters, Deserialize, Serialize)]
-#[getset(get = "pub")]
+#[derive(AsnType, Encode, Decode, Getters, MutGetters, Deserialize, Serialize)]
+#[getset(get = "pub", get_mut = "pub(crate)")]
 pub struct NoteBody {
     /// Our heroic body sections
     #[rasn(tag(explicit(0)))]
@@ -168,10 +147,9 @@ pub struct NoteBody {
     order: Vec<SectionID>,
 }
 
-
 /// Represents a single note.
-#[derive(AsnType, Encode, Decode, Serialize, Deserialize, Getters)]
-#[getset(get = "pub")]
+#[derive(AsnType, Encode, Decode, Serialize, Deserialize, Getters, MutGetters)]
+#[getset(get = "pub", get_mut = "pub(crate)")]
 pub struct Note {
     /// Our ID
     #[rasn(tag(explicit(0)))]
@@ -188,5 +166,8 @@ pub struct Note {
     /// The note's tags
     #[rasn(tag(explicit(4)))]
     tags: Vec<Tag>,
+    /// Whether or not the note is marked as deleted
+    #[rasn(tag(explicit(5)))]
+    deleted: bool,
 }
 

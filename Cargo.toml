@@ -6,11 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-getset = "0.1.2"
-rasn = { path = "../../stamp/tmp/rasn" }
-serde = { version = "1.0.188", features = ["derive"] }
+getset = "0.1"
+rasn = "0.11"
+serde = { version = "1.0", features = ["derive"] }
 stamp-core = { path = "../../stamp/core" }
-thiserror = "1.0.49"
-ulid = { version = "1.1.0", features = ["serde"] }
-url = { version = "2.4.1", features = ["serde"] }
+thiserror = "1.0"
+url = { version = "2.4", features = ["serde"] }
+uuid = { version = "1.6.1", features = ["serde", "v4"] }
 
